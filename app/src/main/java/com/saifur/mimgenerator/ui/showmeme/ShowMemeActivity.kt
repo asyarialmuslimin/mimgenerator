@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.*
@@ -165,12 +166,19 @@ class ShowMemeActivity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode == Activity.RESULT_OK && requestCode == 300){
+
             val imageView = ImageView(this)
             imageView.setImageURI(data?.data)
-            binding.canvasLayout.addView(imageView)
+            val container = RelativeLayout(this)
+            imageView.setOnTouchListener(MoveViewTouchListener(container))
+            container.addView(imageView)
+
+            binding.canvasLayout.addView(container)
+
         }
     }
 

@@ -1,17 +1,27 @@
 package com.saifur.mimgenerator.utils
 
+import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
+import com.facebook.FacebookSdk
+import com.facebook.share.model.SharePhoto
+import com.facebook.share.model.SharePhotoContent
+import com.facebook.share.widget.ShareDialog
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStream
+
 
 object ImageHelper {
     fun saveMediaToStorage(context: Context, bitmap: Bitmap) {
@@ -48,10 +58,11 @@ object ImageHelper {
         }
     }
 
-    fun shareImage(context: Context, bitmap: Bitmap){
-        val filename = "ShareTemp.jpg"
+    fun shareImage(activity: Activity, bitmap: Bitmap, method: SharingMethod){
+        val context = activity.baseContext
+        val filename = "ShareTemp.png"
 
-        var imageTempDir = ""
+        var tempImage:File? = null
 
         var fos: OutputStream? = null
 
@@ -60,7 +71,7 @@ object ImageHelper {
                 val contentValues = ContentValues().apply {
 
                     put(MediaStore.MediaColumns.DISPLAY_NAME, filename)
-                    put(MediaStore.MediaColumns.MIME_TYPE, "image/jpg")
+                    put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                 }
 
@@ -68,35 +79,66 @@ object ImageHelper {
                         resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
 
                 fos = imageUri?.let { resolver.openOutputStream(it) }
-                imageTempDir = imageUri.toString()
+                tempImage = File(imageUri.toString(), filename)
             }
         } else {
             val imagesDir =
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
             val image = File(imagesDir, filename)
             fos = FileOutputStream(image)
-            imageTempDir = image.absolutePath
+            tempImage = image
         }
 
         fos?.use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, it)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
 
-        try {
-            val shareIntent = Intent(Intent.ACTION_SEND)
-            shareIntent.type = "image/*"
-            shareIntent.putExtra(Intent.EXTRA_STREAM, imageTempDir)
-            shareIntent.setClassName("com.twitter.android", "com.twitter.android.PostActivity")
-            context.startActivity(Intent.createChooser(shareIntent, "Share Meme"))
-        }catch (e:Exception){
-            e.printStackTrace()
-        }
+        if(method == SharingMethod.TWITTER){
+            try {
+                val builder = VmPolicy.Builder()
+                StrictMode.setVmPolicy(builder.build())
 
-        val tempFile = File(imageTempDir)
-        if(tempFile.exists()){
-            if(tempFile.delete()){
-                Toast.makeText(context, "Share Success", Toast.LENGTH_SHORT).show()
+                val tweetIntent = Intent(Intent.ACTION_SEND)
+                tweetIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(tempImage))
+                tweetIntent.type = "image/png"
+
+                val packManager: PackageManager = context.packageManager
+                val resolvedInfoList = packManager.queryIntentActivities(tweetIntent, PackageManager.MATCH_ALL)
+
+                var resolved = false
+                for (ri in resolvedInfoList) {
+                    Log.d("IntentActivity", ri.activityInfo.name)
+                    if (ri.activityInfo.name.contains("twitter")) {
+                        tweetIntent.setClassName(ri.activityInfo.packageName,
+                                ri.activityInfo.name);
+                        resolved = true;
+                        break;
+                    }
+
+                }
+
+                if(resolved){
+                    context.startActivity(tweetIntent)
+                }else{
+                    Toast.makeText(context, "No Twitter Found", Toast.LENGTH_SHORT).show()
+                }
+
+            }catch (e: Exception){
+                e.printStackTrace()
             }
+        }else if(method == SharingMethod.FACEBOOK){
+
+            FacebookSdk.setApplicationId("1114219055686393")
+            FacebookSdk.sdkInitialize(context)
+
+            val photo = SharePhoto.Builder()
+                    .setBitmap(bitmap)
+                    .build()
+            val content = SharePhotoContent.Builder()
+                    .addPhoto(photo)
+                    .build()
+
+            ShareDialog.show(activity, content)
         }
 
     }

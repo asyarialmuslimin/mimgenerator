@@ -17,6 +17,7 @@ import com.saifur.mimgenerator.R
 import com.saifur.mimgenerator.data.model.memeresponse.Meme
 import com.saifur.mimgenerator.databinding.ActivityShowMemeBinding
 import com.saifur.mimgenerator.utils.ImageHelper
+import com.saifur.mimgenerator.utils.SharingMethod
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -136,7 +137,11 @@ class ShowMemeActivity : AppCompatActivity() {
         }
 
         binding.btnTwitterShare.setOnClickListener {
-            ImageHelper.shareImage(this, getScreenshot())
+            ImageHelper.shareImage(this, getScreenshot(), SharingMethod.TWITTER)
+        }
+
+        binding.btnFbShare.setOnClickListener {
+            ImageHelper.shareImage(this, getScreenshot(), SharingMethod.FACEBOOK)
         }
     }
 

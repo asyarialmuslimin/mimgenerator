@@ -5,11 +5,9 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
@@ -18,17 +16,22 @@ import com.bumptech.glide.Glide
 import com.saifur.mimgenerator.R
 import com.saifur.mimgenerator.data.model.memeresponse.Meme
 import com.saifur.mimgenerator.databinding.ActivityShowMemeBinding
-import java.io.File
-import java.io.FileNotFoundException
-import java.io.FileOutputStream
-import java.io.IOException
+import com.saifur.mimgenerator.utils.ImageHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.*
+
 
 class ShowMemeActivity : AppCompatActivity() {
     private lateinit var binding:ActivityShowMemeBinding
 
     private var mIsScrolling = false
 
-    private var textSize = 8
+    private var textSize = 20
+
+    private val outRect = Rect()
+    private val location = IntArray(2)
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -117,9 +120,6 @@ class ShowMemeActivity : AppCompatActivity() {
         }
 
         binding.btnDone.setOnClickListener {
-            val fileName = "meme" + System.currentTimeMillis() + ".png"
-            saveImage(fileName)
-
             binding.layoutEdit.visibility = View.GONE
             binding.layoutDone.visibility = View.VISIBLE
         }
@@ -127,6 +127,16 @@ class ShowMemeActivity : AppCompatActivity() {
         binding.btnShare.setOnClickListener {
             binding.layoutDone.visibility = View.GONE
             binding.layoutShare.visibility = View.VISIBLE
+        }
+
+        binding.btnSimpan.setOnClickListener {
+            CoroutineScope(Dispatchers.Main).launch {
+                ImageHelper.saveMediaToStorage(this@ShowMemeActivity, getScreenshot())
+            }
+        }
+
+        binding.btnTwitterShare.setOnClickListener {
+            ImageHelper.shareImage(this, getScreenshot())
         }
     }
 
@@ -136,34 +146,11 @@ class ShowMemeActivity : AppCompatActivity() {
             .into(binding.imageMeme)
     }
 
-    private fun getBitmap() : Bitmap{
+    private fun getScreenshot() : Bitmap{
         binding.canvasLayout.isDrawingCacheEnabled = true
         val bm = Bitmap.createBitmap(binding.canvasLayout.drawingCache)
         binding.canvasLayout.isDrawingCacheEnabled = false
         return bm
-    }
-
-    private fun saveImage(filename: String){
-        val dirpath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM).toString()
-        val dir = File(dirpath)
-        if(!dir.exists()){
-            dir.mkdir()
-        }
-
-        val bm = getBitmap()
-
-        val file = File(dirpath, filename)
-        try {
-            val fs = FileOutputStream(file)
-            bm.compress(Bitmap.CompressFormat.PNG, 100, fs)
-            fs.flush()
-            fs.close()
-            Toast.makeText(this, "Meme Saved", Toast.LENGTH_SHORT).show()
-        }catch (e: FileNotFoundException){
-            e.printStackTrace()
-        }catch (e: IOException){
-            e.printStackTrace()
-        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -178,7 +165,6 @@ class ShowMemeActivity : AppCompatActivity() {
             container.addView(imageView)
 
             binding.canvasLayout.addView(container)
-
         }
     }
 
@@ -203,7 +189,8 @@ class ShowMemeActivity : AppCompatActivity() {
 
             override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
                 mIsScrolling = true
-//                trash.setVisibility(View.VISIBLE)
+                binding.trash.visibility = View.VISIBLE
+                binding.layoutEdit.visibility = View.GONE
                 mView.translationX = e2.rawX - mMotionDownX
                 mView.translationY = e2.rawY - mMotionDownY
                 return true
@@ -213,8 +200,12 @@ class ShowMemeActivity : AppCompatActivity() {
         private var mGestureDetector: GestureDetector = GestureDetector(iView.context, mGestureListener)
 
         override fun onTouch(v: View?, event: MotionEvent?): Boolean {
-            if (event?.action == MotionEvent.ACTION_UP){
+            if (event?.action == MotionEvent.ACTION_UP && isViewInBounds(binding.trash, event.rawX.toInt(), event.rawY.toInt())){
+                val parent = v?.parent as ViewManager
+                parent.removeView(v)
                 mIsScrolling = false
+                binding.trash.visibility = View.VISIBLE
+                binding.layoutEdit.visibility = View.GONE
             }
 
             if(mGestureDetector.onTouchEvent(event)){
@@ -224,10 +215,19 @@ class ShowMemeActivity : AppCompatActivity() {
             if(event?.action == MotionEvent.ACTION_UP){
                 if(mIsScrolling){
                     mIsScrolling = false
+                    binding.trash.visibility = View.GONE
+                    binding.layoutEdit.visibility = View.VISIBLE
                 }
             }
             return false
         }
+    }
+
+    private fun isViewInBounds(view: View, x: Int, y: Int): Boolean {
+        view.getDrawingRect(outRect)
+        view.getLocationOnScreen(location)
+        outRect.offset(location[0], location[1])
+        return outRect.contains(x, y)
     }
 
 }

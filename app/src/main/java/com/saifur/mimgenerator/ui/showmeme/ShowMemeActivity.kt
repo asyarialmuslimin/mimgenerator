@@ -12,6 +12,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.*
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -127,6 +128,8 @@ class ShowMemeActivity : AppCompatActivity() {
                     val drwContainer = MultiTouchGestureView(this, null, drwText)
 
                     val container = RelativeLayout(this)
+                    val layoutParam = ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+                    container.layoutParams = layoutParam
                     drwContainer.setOnTouchListener(MoveViewTouchListener(container))
                     container.addView(drwContainer)
 
@@ -189,6 +192,8 @@ class ShowMemeActivity : AppCompatActivity() {
             val imageView = MultiTouchGestureView(this, null, bmDraw)
 
             val container = RelativeLayout(this)
+            val layoutParam = ViewGroup.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+            container.layoutParams = layoutParam
             imageView.setOnTouchListener(MoveViewTouchListener(container))
             container.addView(imageView)
 

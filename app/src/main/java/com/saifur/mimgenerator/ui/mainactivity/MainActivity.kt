@@ -16,7 +16,6 @@ import com.saifur.mimgenerator.utils.Resource
 import com.saifur.mimgenerator.utils.Status
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var memeAdapter: MemeAdapter
     private lateinit var binding : ActivityMainBinding

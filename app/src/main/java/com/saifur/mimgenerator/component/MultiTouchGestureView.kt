@@ -10,7 +10,6 @@ import android.view.View
 import com.dinuscxj.gesture.MultiTouchGestureDetector
 import com.dinuscxj.gesture.MultiTouchGestureDetector.SimpleOnMultiTouchGestureListener
 
-
 @SuppressLint("ViewConstructor")
 class MultiTouchGestureView(context: Context, attrs: AttributeSet?, drawable: Drawable) :
     View(context, attrs) {
@@ -56,7 +55,7 @@ class MultiTouchGestureView(context: Context, attrs: AttributeSet?, drawable: Dr
         SimpleOnMultiTouchGestureListener() {
         override fun onScale(detector: MultiTouchGestureDetector) {
             mScaleFactor *= detector.scale
-            mScaleFactor = Math.max(0.5f, Math.min(mScaleFactor, 5.0f))
+            mScaleFactor = Math.max(0.1f, Math.min(mScaleFactor, 5.0f))
             invalidate()
         }
 

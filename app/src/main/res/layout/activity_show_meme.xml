@@ -12,8 +12,7 @@
         <RelativeLayout
             android:id="@+id/canvas_layout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_height="600dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -22,20 +21,20 @@
                 android:id="@+id/image_meme"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/placeholder"/>
+                android:src="@drawable/placeholder" />
 
             <ImageView
-                android:visibility="gone"
                 android:id="@+id/trash"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentBottom="true"
-                android:layout_marginStart="159dp"
-                android:layout_marginEnd="164dp"
-                android:layout_marginBottom="394dp"
-                android:src="@drawable/ic_outline_delete_24" />
+                android:layout_marginStart="168dp"
+                android:layout_marginEnd="155dp"
+                android:layout_marginBottom="20dp"
+                android:src="@drawable/ic_outline_delete_24"
+                android:visibility="gone" />
 
         </RelativeLayout>
 

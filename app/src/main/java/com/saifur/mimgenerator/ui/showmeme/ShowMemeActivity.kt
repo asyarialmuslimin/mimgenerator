@@ -2,6 +2,7 @@ package com.saifur.mimgenerator.ui.showmeme
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
@@ -26,7 +27,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.*
 
-
 class ShowMemeActivity : AppCompatActivity() {
     private lateinit var binding:ActivityShowMemeBinding
 
@@ -36,6 +36,8 @@ class ShowMemeActivity : AppCompatActivity() {
 
     private val outRect = Rect()
     private val location = IntArray(2)
+
+    var elementCount = 0
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -124,7 +126,12 @@ class ShowMemeActivity : AppCompatActivity() {
                     val drwText = BitmapDrawable(resources, customText.drawingCache)
                     val drwContainer = MultiTouchGestureView(this, null, drwText)
 
-                    binding.canvasLayout.addView(drwContainer)
+                    val container = RelativeLayout(this)
+                    drwContainer.setOnTouchListener(MoveViewTouchListener(container))
+                    container.addView(drwContainer)
+
+                    binding.canvasLayout.addView(container)
+                    elementCount++
                 }
             }
 
@@ -181,6 +188,7 @@ class ShowMemeActivity : AppCompatActivity() {
             val imageView = MultiTouchGestureView(this, null, bmDraw)
 
             binding.canvasLayout.addView(imageView)
+            elementCount++
         }
     }
 
@@ -189,13 +197,8 @@ class ShowMemeActivity : AppCompatActivity() {
     }
 
     inner class MoveViewTouchListener(iView: View) : View.OnTouchListener {
-        private val mView:View = iView
         private val mGestureListener: GestureDetector.OnGestureListener = object : GestureDetector.SimpleOnGestureListener() {
-            private var mMotionDownX = 0f
-            private var mMotionDownY = 0f
             override fun onDown(e: MotionEvent): Boolean {
-                mMotionDownX = e.rawX - mView.translationX
-                mMotionDownY = e.rawY - mView.translationY
                 return true
             }
 
@@ -207,8 +210,6 @@ class ShowMemeActivity : AppCompatActivity() {
                 mIsScrolling = true
                 binding.trash.visibility = View.VISIBLE
                 binding.layoutEdit.visibility = View.GONE
-                mView.translationX = e2.rawX - mMotionDownX
-                mView.translationY = e2.rawY - mMotionDownY
                 return true
             }
         }
@@ -220,8 +221,8 @@ class ShowMemeActivity : AppCompatActivity() {
                 val parent = v?.parent as ViewManager
                 parent.removeView(v)
                 mIsScrolling = false
-                binding.trash.visibility = View.VISIBLE
-                binding.layoutEdit.visibility = View.GONE
+                binding.trash.visibility = View.GONE
+                binding.layoutEdit.visibility = View.VISIBLE
             }
 
             if(mGestureDetector.onTouchEvent(event)){
@@ -244,6 +245,35 @@ class ShowMemeActivity : AppCompatActivity() {
         view.getLocationOnScreen(location)
         outRect.offset(location[0], location[1])
         return outRect.contains(x, y)
+    }
+
+    private fun checkSavedState(){
+        if(elementCount != 0){
+            AlertDialog.Builder(this)
+                .setTitle("Warning")
+                .setMessage("Meme belum tersimpan, apakah anda yakin keluar ?")
+                .setPositiveButton("Ya", object : DialogInterface.OnClickListener{
+                    override fun onClick(dialog: DialogInterface?, which: Int) {
+                        finish()
+                    }
+                })
+                .setNegativeButton("Tidak", null)
+                .show()
+        }else{
+            finish()
+        }
+    }
+
+    override fun onBackPressed() {
+        checkSavedState()
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if(item.itemId == android.R.id.home){
+            checkSavedState()
+            return true
+        }
+        return false
     }
 
 }

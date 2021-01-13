@@ -6,14 +6,17 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.*
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.saifur.mimgenerator.R
+import com.saifur.mimgenerator.component.MultiTouchGestureView
 import com.saifur.mimgenerator.data.model.memeresponse.Meme
 import com.saifur.mimgenerator.databinding.ActivityShowMemeBinding
 import com.saifur.mimgenerator.utils.ImageHelper
@@ -109,11 +112,19 @@ class ShowMemeActivity : AppCompatActivity() {
                     customText.textSize = textSize.toFloat()
                     customText.text = editText.text.toString()
                     customText.setTextColor(textColor)
-                    val container = RelativeLayout(this)
-                    customText.setOnTouchListener(MoveViewTouchListener(container))
-                    container.addView(customText)
 
-                    binding.canvasLayout.addView(container)
+                    customText.measure(
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                        View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED))
+
+                    customText.layout(0, 0, customText.measuredWidth, customText.measuredHeight)
+                    customText.isDrawingCacheEnabled = true
+                    customText.buildDrawingCache()
+
+                    val drwText = BitmapDrawable(resources, customText.drawingCache)
+                    val drwContainer = MultiTouchGestureView(this, null, drwText)
+
+                    binding.canvasLayout.addView(drwContainer)
                 }
             }
 
@@ -163,13 +174,13 @@ class ShowMemeActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if(resultCode == Activity.RESULT_OK && requestCode == 300){
 
-            val imageView = ImageView(this)
-            imageView.setImageURI(data?.data)
-            val container = RelativeLayout(this)
-            imageView.setOnTouchListener(MoveViewTouchListener(container))
-            container.addView(imageView)
+            val imageUri = data?.data
+            val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+            val bmDraw = BitmapDrawable(resources, bitmap)
 
-            binding.canvasLayout.addView(container)
+            val imageView = MultiTouchGestureView(this, null, bmDraw)
+
+            binding.canvasLayout.addView(imageView)
         }
     }
 

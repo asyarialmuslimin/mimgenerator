@@ -166,6 +166,7 @@ class ShowMemeActivity : AppCompatActivity() {
     private fun loadImage(url: String){
         Glide.with(this)
             .load(url)
+            .fitCenter()
             .into(binding.imageMeme)
     }
 
@@ -187,7 +188,11 @@ class ShowMemeActivity : AppCompatActivity() {
 
             val imageView = MultiTouchGestureView(this, null, bmDraw)
 
-            binding.canvasLayout.addView(imageView)
+            val container = RelativeLayout(this)
+            imageView.setOnTouchListener(MoveViewTouchListener(container))
+            container.addView(imageView)
+
+            binding.canvasLayout.addView(container)
             elementCount++
         }
     }
@@ -223,6 +228,7 @@ class ShowMemeActivity : AppCompatActivity() {
                 mIsScrolling = false
                 binding.trash.visibility = View.GONE
                 binding.layoutEdit.visibility = View.VISIBLE
+                elementCount--
             }
 
             if(mGestureDetector.onTouchEvent(event)){
@@ -252,11 +258,8 @@ class ShowMemeActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("Warning")
                 .setMessage("Meme belum tersimpan, apakah anda yakin keluar ?")
-                .setPositiveButton("Ya", object : DialogInterface.OnClickListener{
-                    override fun onClick(dialog: DialogInterface?, which: Int) {
-                        finish()
-                    }
-                })
+                .setPositiveButton("Ya"
+                ) { _, _ -> finish() }
                 .setNegativeButton("Tidak", null)
                 .show()
         }else{

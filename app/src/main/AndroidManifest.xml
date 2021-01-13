@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MimGenerator">
         <activity android:name=".ui.showmeme.ShowMemeActivity"/>
-        <activity android:name=".ui.mainactivity.MainActivity">
+        <activity android:name=".ui.mainactivity.MainActivity"
+            android:theme="@style/NoToolbar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

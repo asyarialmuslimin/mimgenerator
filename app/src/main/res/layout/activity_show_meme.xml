@@ -60,11 +60,11 @@
                     android:layout_height="wrap_content"
                     android:text="Add Logo"
                     android:textColor="@color/black"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:src="@drawable/ic_image"
                     app:tint="@color/black" />
             </LinearLayout>
@@ -81,22 +81,22 @@
                     android:layout_height="wrap_content"
                     android:text="Add Text"
                     android:textColor="@color/black"
-                    android:textSize="21sp" />
+                    android:textSize="18sp" />
 
                 <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:src="@drawable/ic_text"
                     app:tint="@color/black" />
             </LinearLayout>
 
             <Button
                 android:id="@+id/btn_done"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginStart="16dp"
-                android:text="DONE" />
+                android:text="done" />
         </LinearLayout>
 
         <LinearLayout
